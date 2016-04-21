@@ -15,6 +15,7 @@ This template accepts the following parameters:
 - force-puppet: boolean (default=false)
 - enable-puppetlabs-repo: boolean (default=false)
 - enable-puppetlabs-pc1-repo: boolean (default=false)
+- puppetlabs-yum-host: string (default="yum.puppetlabs.com")
 - salt_master: string (default=undef)
 - ntp-server: string (default="0.fedora.pool.ntp.org")
 - bootloader-append: string (default="nofb quiet splash=quiet")
@@ -31,6 +32,7 @@ This template accepts the following parameters:
   salt_enabled = @host.params['salt_master'] ? true : false
   chef_enabled = @host.respond_to?(:chef_proxy) && @host.chef_proxy
   section_end = os_major <= 5 ? '' : '%end'
+  puppetlabs_yum_host = @host.params['puppetlabs-yum-host'] || 'yum.puppetlabs.com'
 %>
 install
 <%= @mediapath %><%= proxy_string %>
@@ -68,11 +70,11 @@ realm join --one-time-password='<%= @host.otp || "$HOST[OTP]" %>' <%= @host.real
 repo --name="EPEL" --mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-<%= @host.operatingsystem.major %>&arch=<%= @host.architecture %><%= proxy_string %>
 <% if puppet_enabled -%>
 <% if @host.param_true?('enable-puppetlabs-repo') -%>
-repo --name=puppetlabs-products --baseurl=http://yum.puppetlabs.com/el/<%= @host.operatingsystem.major %>/products/<%= @host.architecture %><%= proxy_string %>
-repo --name=puppetlabs-deps --baseurl=http://yum.puppetlabs.com/el/<%= @host.operatingsystem.major %>/dependencies/<%= @host.architecture %><%= proxy_string %>
+repo --name=puppetlabs-products --baseurl=http://<%= puppetlabs_yum_host %>/el/<%= @host.operatingsystem.major %>/products/<%= @host.architecture %><%= proxy_string %>
+repo --name=puppetlabs-deps --baseurl=http://<%= puppetlabs_yum_host %>/el/<%= @host.operatingsystem.major %>/dependencies/<%= @host.architecture %><%= proxy_string %>
 <% end -%>
 <% if @host.param_true?('enable-puppetlabs-pc1-repo') -%>
-repo --name=puppetlabs-pc1 --baseurl=http://yum.puppetlabs.com/el/<%= @host.operatingsystem.major %>/PC1/<%= @host.architecture %><%= proxy_string %>
+repo --name=puppetlabs-pc1 --baseurl=http://<%= puppetlabs_yum_host %>/el/<%= @host.operatingsystem.major %>/PC1/<%= @host.architecture %><%= proxy_string %>
 <% end -%>
 <% end -%>
 <% end -%>
